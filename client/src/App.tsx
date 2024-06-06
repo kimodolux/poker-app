@@ -1,23 +1,15 @@
-import React from 'react';
+import React, { useState } from "react"
+import { Home } from "./components/Home"
+import { Login } from "./components/Login"
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+const App = () => {
+  const [username, setUsername] = useState("")
+
+  return username ? (
+    <Home username={username} />
+  ) : (
+    <Login onSubmit={setUsername} />
+  )
 }
 
 export default App;
