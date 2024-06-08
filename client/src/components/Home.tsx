@@ -1,9 +1,13 @@
 import useWebSocket from "react-use-websocket"
-import { useEffect, useRef } from "react"
-import throttle from "lodash.throttle"
-import {PublicGameState, Room} from "../types"
+import { MouseEventHandler, useEffect } from "react"
+import {PublicGameState, Room, EventMessage, MessageType} from "../types"
 
-const renderGameState = (room_info: Room, username: string) => {
+const renderGameState = (room_info: Room, username: string, sendJsonMessage: (em: EventMessage) => void) => {
+  console.log(room_info)
+  if(!room_info.public_game_state || !room_info.users){
+    return <></>
+  }
+  let uuid = room_info.users.find(u => u.username === username)?.id
   return (
     <>
     <h1>Room name: {room_info.name}</h1>
@@ -13,17 +17,19 @@ const renderGameState = (room_info: Room, username: string) => {
       return <p> {user.username} </p>
     })}
      <h2>Players in game</h2>
-    {room_info.game?.public_game_state.players.map(player => {
+    {room_info.public_game_state.players.map(player => {
       return <p> {player.username} </p>
     })}
      <h2>Table cards</h2>
-    {room_info.game?.public_game_state.tableCards?.map(card => {
+    {room_info.public_game_state.tableCards?.map(card => {
       return <p> {card.suit} {card.value} </p>
     })}
     <h2>Public game state</h2>
-    <p>Game state: {room_info.game?.public_game_state.state}</p>
-    <p>Players tunr: {room_info.game?.public_game_state.playersTurnCount}</p>
+    <p>Game state: {room_info.public_game_state.state}</p>
+    <p>Players turn: {room_info.public_game_state.playersTurnCount}</p>
     
+    {!(username in room_info.public_game_state.players) && <button onClick={() => sendJsonMessage({uuid, messageType: MessageType.JOIN_GAME} as EventMessage)}>Join Game</button>}
+    {username in room_info.public_game_state.players && <button onClick={() => sendJsonMessage({uuid, messageType: MessageType.LEAVE_GAME} as EventMessage)}>Leave Game</button>}
     </>
   )
 }
@@ -35,24 +41,12 @@ export function Home({ username }: {username: string}) {
     queryParams: { username },
   })
 
-  const THROTTLE = 50
-  const sendJsonMessageThrottled = useRef(throttle(sendJsonMessage, THROTTLE))
-
   useEffect(() => {
-    sendJsonMessage({
-      x: 0,
-      y: 0,
-    })
-    window.addEventListener("mousemove", (e) => {
-      sendJsonMessageThrottled.current({
-        x: e.clientX,
-        y: e.clientY,
-      })
-    })
+    sendJsonMessage({uuid: "null", messageType: MessageType.TURN_ACTION} as EventMessage)
   }, [sendJsonMessage])
 
   if (room_info) {
-    return <>{renderGameState(room_info, username)}</>
+    return <>{renderGameState(room_info, username, sendJsonMessage)}</>
   }
   return <></>
 }

@@ -1,6 +1,6 @@
 import { Card, Duplicate, Game, GameState, Suit, Value } from "./types";
 
-let constructNewDeck = () => {
+export const constructNewDeck = () => {
   let deck: Card[] = [];
   for (let suit in Suit) {
     for (let x = 2; x <= 14; x++) {
@@ -8,7 +8,7 @@ let constructNewDeck = () => {
       deck.push(card);
     }
   }
-  return deck;
+  return shuffleDeck(deck);
 };
 
 // not using cryptographically secure random numbers, good enough for now
@@ -37,13 +37,13 @@ let compareCardsDesc = (a: Card, b: Card) => {
 // this comparison only matters when the number of cards being compared is the same
 export let caluclateScoreFromHighCard = (cards: Card[]) => {
   let score = 0;
-  let len = cards.length - 1
-  let upper_bound = 13 * Math.pow(13, len) // upper bound on score
-  const sorted_cards = cards.sort(compareCardsDesc)
+  let len = cards.length - 1;
+  let upper_bound = 13 * Math.pow(13, len); // upper bound on score
+  const sorted_cards = cards.sort(compareCardsDesc);
   sorted_cards.forEach((card, index) => {
     let value = card.value - 2; // convert 2->14 to 0->12
     score += value * Math.pow(13, len - index);
-  })
+  });
   return score / upper_bound;
 };
 
@@ -120,9 +120,11 @@ export let calculateHandRanking = (communityCards: Card[], hand: Card[]) => {
   if (flushExists) {
     if (clubs >= 5) {
       flush = combinedCards.filter((card) => card.suit === Suit.Club);
-    } else if (spades >= 5) {
+    } 
+    else if (spades >= 5) {
       flush = combinedCards.filter((card) => card.suit === Suit.Spade);
-    } else if (hearts >= 5) {
+    } 
+    else if (hearts >= 5) {
       flush = combinedCards.filter((card) => card.suit === Suit.Heart);
     }
     // must be diamonds as flush exists
@@ -171,8 +173,9 @@ export let calculateHandRanking = (communityCards: Card[], hand: Card[]) => {
     //4 of a kind!
     for (let d = 0; d < duplicates.length; d++) {
       if (duplicates[d].count === 4) {
-        let highCards = combinedCards
-          .filter((c) => c.value != duplicates[d].value)
+        let highCards = combinedCards.filter(
+          (c) => c.value != duplicates[d].value
+        );
         return (
           700 + duplicates[d].value / 14 + caluclateScoreFromHighCard(highCards)
         );
@@ -233,8 +236,9 @@ export let calculateHandRanking = (communityCards: Card[], hand: Card[]) => {
     for (let d = 0; d < duplicates.length; d++) {
       if (duplicates[d].count === 3) {
         // three of a kind!
-        let highCards = combinedCards
-          .filter((c) => c.value != duplicates[d].value)
+        let highCards = combinedCards.filter(
+          (c) => c.value != duplicates[d].value
+        );
         return (
           300 +
           (duplicates[d].value / 14) * 50 +
@@ -252,8 +256,7 @@ export let calculateHandRanking = (communityCards: Card[], hand: Card[]) => {
         pairs.sort((a, b) => b - a);
         let topPairs = pairs.slice(0, 1);
         //two pair!
-        let highCards = combinedCards
-          .filter((d) => !(d.value in topPairs))
+        let highCards = combinedCards.filter((d) => !(d.value in topPairs));
         return (
           200 +
           (Math.pow(topPairs[0], 2) / 392 + Math.pow(topPairs[1], 2) / 392) *
@@ -263,8 +266,7 @@ export let calculateHandRanking = (communityCards: Card[], hand: Card[]) => {
       }
       // two pair
       let pairs = duplicates.map((d) => d.value);
-      let highCards = combinedCards
-        .filter((d) => !(d.value in pairs))
+      let highCards = combinedCards.filter((d) => !(d.value in pairs));
       return (
         200 +
         (Math.pow(pairs[0], 2) / 392 + Math.pow(pairs[1], 2) / 392) * 50 +
@@ -279,8 +281,7 @@ export let calculateHandRanking = (communityCards: Card[], hand: Card[]) => {
       if (duplicates[d].count === 2) {
         // pair!
         let pair = duplicates[d].value;
-        let highCards = combinedCards
-          .filter((d) => d.value != pair)
+        let highCards = combinedCards.filter((d) => d.value != pair);
         return 100 + (pair / 14) * 50 + caluclateScoreFromHighCard(highCards);
       }
     }
@@ -291,20 +292,20 @@ export let calculateHandRanking = (communityCards: Card[], hand: Card[]) => {
   return caluclateScoreFromHighCard(highCards);
 };
 
-export let newGame = (): Game => {
-  let deck = constructNewDeck();
-  deck = shuffleDeck(deck);
+// export let newGame = (): Game => {
+//   let deck = constructNewDeck();
+//   deck = shuffleDeck(deck);
 
-  let tableCards: Card[] = [];
+//   let tableCards: Card[] = [];
 
-  let game: Game = {
-    players: [],
-    state: GameState.Not_Started,
-    playersTurnCount: 0,
-    tableCards,
-    deck,
-  };
-  return game;
-};
+//   let game: Game = {
+//     players: [],
+//     state: GameState.Not_Started,
+//     playersTurnCount: 0,
+//     tableCards,
+//     deck,
+//   };
+//   return game;
+// };
 
 export let playerMakesTurn = () => {};

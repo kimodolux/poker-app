@@ -1,10 +1,3 @@
-export enum Action {
-    Raise = "raise",
-    Check = "check",
-    Call = "call",
-    Fold = "fold",
-}
-
 export enum Suit {
     Heart = "Heart",
     Diamond = "Diamond",
@@ -41,24 +34,34 @@ export type Duplicate = {
 export type User = {
     id: string,
     username: string,
-    email: string,
-    password: string,
-    bank: number
 }
 
 export type Player = {
-    username: string,  
-    id: string,
+    public_player_info: PublicPlayerInfo,
+    private_player_info: PrivatePlayerInfo
+}
+
+export type PublicPlayerInfo = {
+    username: string,
+    seatNumber: number,
     chips: number,
-    hand: Card[]
+}
+
+export type PrivatePlayerInfo = {
+    hand?: Card[]
 }
 
 export type Game = {
-    players: Player[],
-    playersTurnCount: number,
-    tableCards: Card[],
-    state: GameState,
+    public_game_state: PublicGameState,
+    players_state: {[id: string]: PrivatePlayerInfo}, // id to player info dict
     deck: Card[]
+}
+
+export type PublicGameState = {
+    players: PublicPlayerInfo[],
+    playersTurnCount?: number,
+    tableCards?: Card[],
+    state: GameState,
 }
 
 export enum GameState {
@@ -71,6 +74,26 @@ export enum GameState {
 export type Room = {
     id: string,
     name: string,
-    players?: Player[],
-    game?: Game
+    users?: User[],
+    public_game_state: PublicGameState
+}
+
+export enum MessageType {
+    JOIN_GAME = "JOIN_GAME",
+    LEAVE_GAME = "LEAVE_GAME",
+    TURN_ACTION = "TURN_ACTION"
+}
+
+export enum TurnAction {
+    CALL = "CALL",
+    FOLD = "FOLD",
+    RAISE = "RAISE",
+    ALL_IN = "ALL_IN"
+}
+
+export type EventMessage = {
+    uuid: string,
+    messageType: MessageType,
+    action?: TurnAction,
+    actionAmount?: number
 }
