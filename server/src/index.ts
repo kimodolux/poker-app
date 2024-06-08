@@ -2,7 +2,7 @@ import WebSocket from "ws"
 import http, { IncomingMessage } from "http"
 import url from "url"
 import { v4 as uuidv4 } from "uuid"
-import { Game, Player, GameState, PublicPlayerInfo, PrivatePlayerInfo, Room, User, EventMessage, TurnAction } from "./types"
+import { Game, GameState, PublicPlayerInfo, Room, User, EventMessage, TurnAction } from "./types"
 import { constructNewDeck } from "./game"
 
 const server = http.createServer()
@@ -31,40 +31,45 @@ let room: Room = {
 
 const handleMessage = async (bytes: EventMessage) => {
   let event_message = JSON.parse(bytes.toString()) as EventMessage
-  console.log(event_message)
   let {uuid, messageType, action} = event_message
   switch(messageType){
     case "JOIN_GAME":
-       joinGame(uuid)
+      await joinGame(uuid)
+      break
     case "LEAVE_GAME":
-       leaveGame(uuid)
+      await leaveGame(uuid)
+      break
     case "TURN_ACTION":
       if(action){
-         handleAction(uuid, action)
+        await handleAction(uuid, action)
+        break
       }
       else{
         // handle exception
       }
-
+    case "INITAL_FETCH":
+      await initialFetch(uuid)
+      break
   }
+}
+
+const initialFetch = async (uuid: string) => {
   broadcastPublic()
 }
 
 const joinGame = async (uuid: string) => {
-  console.log(uuid)
   const user = room.users!.find((u: User) => u.id === uuid)
-  console.log(user)
   game.players_state[uuid] = {hand: undefined}
   let player = {username: user?.username, seatNumber: 1, chips: 1000 } as PublicPlayerInfo
-  room.public_game_state.players.push(player)
+  game.public_game_state.players.push(player)
   broadcastPublic()
 }
 
 const leaveGame = async (uuid: string) => {
   const user = room.users!.find((u: User) => u.id === uuid)
-  let player = {username: user?.username, seatNumber: 1, chips: 1000 } as PublicPlayerInfo
+  
   delete game.players_state[uuid]
-  game.public_game_state.players = game.public_game_state.players.filter(p => p.username !== player.username)
+  game.public_game_state.players = game.public_game_state.players.filter(p => p.username !== user?.username)
   broadcastPublic()
 }
 
@@ -75,6 +80,8 @@ const handleAction = async (uuid: string, action: TurnAction) => {
 const handleClose = async (uuid: string) => {
   const user = room.users?.find((u: User) => u.id === uuid)
   room.users = room.users?.filter(u => u.id == uuid)
+  delete game.players_state[uuid]
+  game.public_game_state.players = game.public_game_state.players.filter(p => p.username !== user?.username)
   console.log(`user ${user?.username} disconeccted`)
   broadcastPublic()
 }

@@ -81,7 +81,8 @@ export type Room = {
 export enum MessageType {
     JOIN_GAME = "JOIN_GAME",
     LEAVE_GAME = "LEAVE_GAME",
-    TURN_ACTION = "TURN_ACTION"
+    TURN_ACTION = "TURN_ACTION",
+    INITAL_FETCH = "INITAL_FETCH"
 }
 
 export enum TurnAction {

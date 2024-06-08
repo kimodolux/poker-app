@@ -292,20 +292,4 @@ export let calculateHandRanking = (communityCards: Card[], hand: Card[]) => {
   return caluclateScoreFromHighCard(highCards);
 };
 
-// export let newGame = (): Game => {
-//   let deck = constructNewDeck();
-//   deck = shuffleDeck(deck);
-
-//   let tableCards: Card[] = [];
-
-//   let game: Game = {
-//     players: [],
-//     state: GameState.Not_Started,
-//     playersTurnCount: 0,
-//     tableCards,
-//     deck,
-//   };
-//   return game;
-// };
-
 export let playerMakesTurn = () => {};
