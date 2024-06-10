@@ -1,4 +1,4 @@
-import { calculateHandRanking, caluclateScoreFromHighCard } from "../src/game";
+import { calculateHandRanking, caluclateScoreFromHighCard } from "../src/poker";
 import { Card, Suit, Value } from "../src/types";
 
 describe("caluclateScoreFromHighCard module", () => {

@@ -42,33 +42,41 @@ export type Player = {
 }
 
 export type PublicPlayerInfo = {
+    id: string,
     username: string,
-    seatNumber: number,
     chips: number,
+    current_bid: number
+    folded: boolean
 }
 
 export type PrivatePlayerInfo = {
+    id: string,
+    username: string,
     hand?: Card[]
 }
 
 export type Game = {
     public_game_state: PublicGameState,
     players_state: {[id: string]: PrivatePlayerInfo}, // id to player info dict
-    deck: Card[]
+    deck: Card[],
 }
 
 export type PublicGameState = {
-    players: PublicPlayerInfo[],
+    seats: (PublicPlayerInfo | null)[],
     playersTurnCount?: number,
     tableCards?: Card[],
     state: GameState,
+    pot: number
+    current_highest_bid: number
 }
 
 export enum GameState {
     Not_Started = "not_started",
-    Waiting = "waiting", // started but waiting for blinds
+    Game_Initalised = "game_initalised",
+    Waiting = "waiting",
+    Dealing = "dealing",
     In_Progress = "in_progress", // game being played
-    Dealing = "dealing"
+    Concluded = "concluded",
 }
 
 export type Room = {
@@ -80,6 +88,7 @@ export type Room = {
 
 export enum MessageType {
     JOIN_GAME = "JOIN_GAME",
+    START_GAME = "START_GAME",
     LEAVE_GAME = "LEAVE_GAME",
     TURN_ACTION = "TURN_ACTION",
     INITAL_FETCH = "INITAL_FETCH"
@@ -97,4 +106,9 @@ export type EventMessage = {
     messageType: MessageType,
     action?: TurnAction,
     actionAmount?: number
+}
+
+export type WebSocketResponse = {
+    room: Room,
+    private_player_state: PrivatePlayerInfo
 }

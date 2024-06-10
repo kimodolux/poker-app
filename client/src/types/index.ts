@@ -49,12 +49,14 @@ export type Player = {
 }
 
 export type PublicPlayerInfo = {
+    id: string,
     username: string,
-    seatNumber: number,
     chips: number,
 }
 
 export type PrivatePlayerInfo = {
+    id: string,
+    username: string,
     hand?: Card[]
 }
 
@@ -63,9 +65,8 @@ export type Game = {
     players_state: {[id: string]: PrivatePlayerInfo}, // id to player info dict
     deck: Card[]
 }
-
 export type PublicGameState = {
-    players: PublicPlayerInfo[],
+    seats: [PublicPlayerInfo | null], // player id
     playersTurnCount?: number,
     tableCards?: Card[],
     state: GameState,
@@ -88,6 +89,7 @@ export type Room = {
 export enum MessageType {
     JOIN_GAME = "JOIN_GAME",
     LEAVE_GAME = "LEAVE_GAME",
+    START_GAME = "START_GAME",
     TURN_ACTION = "TURN_ACTION"
 }
 
@@ -102,4 +104,9 @@ export type EventMessage = {
     messageType: MessageType,
     action?: TurnAction,
     actionAmount?: number
+}
+
+export type WebSocketResponse = {
+    room: Room,
+    private_player_state?: PrivatePlayerInfo
 }
