@@ -2,7 +2,7 @@ import { calculateHandRanking, caluclateScoreFromHighCard } from "../src/poker";
 import { Card, Suit, Value } from "../src/types";
 
 describe("caluclateScoreFromHighCard module", () => {
-    test("upper vs lower bound test", () => {
+  test("upper vs lower bound test", () => {
     let hand1 = [
       { value: Value.Ace, suit: Suit.Diamond },
       { value: Value.Ace, suit: Suit.Heart },
@@ -22,7 +22,6 @@ describe("caluclateScoreFromHighCard module", () => {
     let handRanking2 = caluclateScoreFromHighCard(hand2);
     expect(handRanking1).toBeGreaterThan(handRanking2);
   });
-  
 
   test("ace vs 4 kings test", () => {
     let hand1 = [
@@ -43,7 +42,7 @@ describe("caluclateScoreFromHighCard module", () => {
     let handRanking2 = caluclateScoreFromHighCard(hand2);
     expect(handRanking1).toBeGreaterThan(handRanking2);
   });
-  
+
   test("2 kings vs 2 queens test", () => {
     let hand1 = [
       { value: Value.King, suit: Suit.Club },
@@ -59,12 +58,8 @@ describe("caluclateScoreFromHighCard module", () => {
   });
 
   test("two vs three test", () => {
-    let hand1 = [
-      { value: Value.Three, suit: Suit.Club },
-    ];
-    let hand2 = [
-      { value: Value.Two, suit: Suit.Diamond },
-    ];
+    let hand1 = [{ value: Value.Three, suit: Suit.Club }];
+    let hand2 = [{ value: Value.Two, suit: Suit.Diamond }];
     let handRanking1 = caluclateScoreFromHighCard(hand1);
     let handRanking2 = caluclateScoreFromHighCard(hand2);
     expect(handRanking1).toBeGreaterThan(handRanking2);

@@ -120,11 +120,9 @@ export let calculateHandRanking = (communityCards: Card[], hand: Card[]) => {
   if (flushExists) {
     if (clubs >= 5) {
       flush = combinedCards.filter((card) => card.suit === Suit.Club);
-    } 
-    else if (spades >= 5) {
+    } else if (spades >= 5) {
       flush = combinedCards.filter((card) => card.suit === Suit.Spade);
-    } 
-    else if (hearts >= 5) {
+    } else if (hearts >= 5) {
       flush = combinedCards.filter((card) => card.suit === Suit.Heart);
     }
     // must be diamonds as flush exists
@@ -174,7 +172,7 @@ export let calculateHandRanking = (communityCards: Card[], hand: Card[]) => {
     for (let d = 0; d < duplicates.length; d++) {
       if (duplicates[d].count === 4) {
         let highCards = combinedCards.filter(
-          (c) => c.value != duplicates[d].value
+          (c) => c.value != duplicates[d].value,
         );
         return (
           700 + duplicates[d].value / 14 + caluclateScoreFromHighCard(highCards)
@@ -197,7 +195,7 @@ export let calculateHandRanking = (communityCards: Card[], hand: Card[]) => {
       ) {
         let max = Math.max(
           sortedDuplicated[1].value,
-          sortedDuplicated[2].value
+          sortedDuplicated[2].value,
         );
         return 600 + sortedDuplicated[0].count + max / 14;
       }
@@ -237,7 +235,7 @@ export let calculateHandRanking = (communityCards: Card[], hand: Card[]) => {
       if (duplicates[d].count === 3) {
         // three of a kind!
         let highCards = combinedCards.filter(
-          (c) => c.value != duplicates[d].value
+          (c) => c.value != duplicates[d].value,
         );
         return (
           300 +
