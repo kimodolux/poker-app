@@ -1,10 +1,3 @@
-export enum Action {
-  Raise = "raise",
-  Check = "check",
-  Call = "call",
-  Fold = "fold",
-}
-
 export enum Suit {
   Heart = "Heart",
   Diamond = "Diamond",
@@ -52,6 +45,9 @@ export type PublicPlayerInfo = {
   id: string;
   username: string;
   chips: number;
+  current_bid: number;
+  folded: boolean;
+  hand_ranking?: number
 };
 
 export type PrivatePlayerInfo = {
@@ -65,32 +61,39 @@ export type Game = {
   players_state: { [id: string]: PrivatePlayerInfo }; // id to player info dict
   deck: Card[];
 };
+
 export type PublicGameState = {
-  seats: [PublicPlayerInfo | null]; // player id
-  playersTurnCount?: number;
-  tableCards?: Card[];
+  seats: (PublicPlayerInfo | null)[];
+  seatNumbersTurn: number;
+  tableCards: Card[];
   state: GameState;
+  pot: number;
+  blind: number;
+  current_highest_bid: number;
+  timeLeft: number
 };
 
 export enum GameState {
   Not_Started = "not_started",
-  Waiting = "waiting", // started but waiting for blinds
-  In_Progress = "in_progress", // game being played
+  Game_Initalised = "game_initalised",
+  Waiting = "waiting",
   Dealing = "dealing",
+  In_Progress = "in_progress", // game being played
+  Concluded = "concluded",
 }
 
 export type Room = {
   id: string;
   name: string;
-  users?: User[];
-  public_game_state: PublicGameState;
+  users: User[];
 };
 
 export enum MessageType {
   JOIN_GAME = "JOIN_GAME",
-  LEAVE_GAME = "LEAVE_GAME",
   START_GAME = "START_GAME",
+  LEAVE_GAME = "LEAVE_GAME",
   TURN_ACTION = "TURN_ACTION",
+  INITAL_FETCH = "INITAL_FETCH",
 }
 
 export enum TurnAction {
@@ -101,6 +104,7 @@ export enum TurnAction {
 }
 
 export type EventMessage = {
+  uuid: string;
   messageType: MessageType;
   action?: TurnAction;
   actionAmount?: number;
@@ -108,5 +112,6 @@ export type EventMessage = {
 
 export type WebSocketResponse = {
   room: Room;
-  private_player_state?: PrivatePlayerInfo;
+  game: Game;
+  private_player_state: PrivatePlayerInfo;
 };

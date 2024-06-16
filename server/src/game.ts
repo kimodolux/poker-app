@@ -1,20 +1,28 @@
 import { calculateHandRanking, constructNewDeck } from "./poker";
 import { Game, GameState, PublicPlayerInfo, TurnAction } from "./types";
 
-let room_size = 4;
+const room_size = 4;
 
-export let game: Game = {
+const turn_time = 10
+
+let game: Game = {
   public_game_state: {
     seats: Array(room_size).fill(null) as (PublicPlayerInfo | null)[],
-    playersTurnCount: undefined,
-    tableCards: undefined,
+    seatNumbersTurn: 0,
+    tableCards: [],
     state: GameState.Not_Started,
     pot: 0,
+    blind: 0,
     current_highest_bid: 0,
+    timeLeft: 0,
   },
   players_state: {},
   deck: constructNewDeck(),
 };
+
+export const getGame = () => {
+  return game
+}
 
 export const addPlayerToGame = (
   player: PublicPlayerInfo,
@@ -35,21 +43,31 @@ export const removePlayerFromGame = (uuid: string) => {
       game.public_game_state.seats[seat_index] = null;
     }
   }
+  // TODO: handle if it was their turn
 };
 
-export const initialiseGame = (game: Game, blind: number) => {
+export const setTurnToFirstPlayer = () => {
+  const seats = game.public_game_state.seats
+  const first_player_seat = seats.findIndex(s => s?.id)
+  if(first_player_seat === -1){
+    console.log("no players")
+    return
+  }
+  game.public_game_state.timeLeft = turn_time
+  game.public_game_state.seatNumbersTurn = first_player_seat
+}
+
+export const initialiseGame = async (blind: number) => {
+  game.deck = constructNewDeck()
   let pot = 0;
   game.public_game_state.seats.forEach((p) => {
     if (p) {
       p.chips -= blind;
       pot += blind;
+      p.hand_ranking = undefined
     }
   });
-  game.public_game_state.pot = pot;
-  game.public_game_state.state = GameState.Waiting;
-};
-
-export const initialiseRound = (game: Game) => {
+  setTurnToFirstPlayer()
   let deck = game.deck;
   // first card
   game.public_game_state.seats.forEach((p) => {
@@ -64,12 +82,32 @@ export const initialiseRound = (game: Game) => {
       game.players_state[p.id].hand!.push(deck!.pop()!);
     }
   });
-  game.public_game_state.playersTurnCount = 0;
-  game.public_game_state.state = GameState.In_Progress;
-  game.public_game_state.hand_rankings = undefined;
+  game.public_game_state = {
+    ...game.public_game_state,
+    pot,
+    blind,
+    state: GameState.In_Progress,
+    timeLeft: turn_time,
+    tableCards: [],
+    current_highest_bid: 0
+  }
 };
 
-export const nextRound = (game: Game) => {
+export const finaliseRound = async () => {
+  game.public_game_state.state = GameState.Concluded
+  game.public_game_state.timeLeft = turn_time
+  let intervalId = setInterval(() => {
+    if(game.public_game_state.timeLeft  <= 0){
+      clearInterval(intervalId)
+      initialiseGame(game.public_game_state.blind)
+    }
+    game.public_game_state.timeLeft -= 1
+  }, 1000)
+}
+
+
+export const nextRound = async () => {
+  setTurnToFirstPlayer()
   let pot = game.public_game_state.pot;
   let current_highest_bid = game.public_game_state.current_highest_bid;
   pot += current_highest_bid;
@@ -92,48 +130,46 @@ export const nextRound = (game: Game) => {
   // 5 table cards, resolve and split pot
   else {
     let community_cards = game.public_game_state.tableCards;
-    let player_rankings = {} as { [id: string]: number };
     game.public_game_state.seats.forEach((p) => {
       if (p) {
         let player_hand = game.players_state[p.id].hand;
-        player_rankings[p.id] = calculateHandRanking(
+        p.hand_ranking = calculateHandRanking(
           community_cards,
           player_hand!,
         );
+        console.log(p.hand_ranking)
       }
     });
-    game.public_game_state.hand_rankings = player_rankings;
   }
 };
 
-const timer = (seconds: number) => {
-  var timeleft = seconds;
-  var downloadTimer = setInterval(() => {
-
-    if (timeleft == 0) {
-      clearInterval(downloadTimer);
-    }
-    timeleft -= 1;
-  }, 1000);
-}
 
 const incrementTurn = () => {
-  game.public_game_state.playersTurnCount!++;
+  game.public_game_state.seatNumbersTurn++;
+  let seats_length = game.public_game_state.seats.length
+  for(let i = game.public_game_state.seatNumbersTurn; i < seats_length; i++){
+    let seat = game.public_game_state.seats[i]
+    if(seat && !seat.folded){
+      break
+    }
+  }
+  game.public_game_state.timeLeft = 10;
 }
 
-export const handlePlayerAction = (
-  game: Game,
+export const decrementTimer = () => {
+  game.public_game_state.timeLeft -= 1;
+}
+
+export const handlePlayerAction = async (
   uuid: string,
   action: TurnAction,
   actionAmount?: number,
 ) => {
-  if (!game.public_game_state.playersTurnCount) {
-    return;
-  }
-  let player =
-    game.public_game_state.seats[game.public_game_state.playersTurnCount];
+  let players = game.public_game_state.seats
+  let player = players[game.public_game_state.seatNumbersTurn]
   if (player?.id !== uuid) {
-    return; // not your go
+    console.log("not your turn")
+    return;
   }
   switch (action) {
     case TurnAction.CALL:

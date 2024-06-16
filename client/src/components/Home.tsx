@@ -1,6 +1,6 @@
 import useWebSocket from "react-use-websocket";
-import { useEffect } from "react";
-import { Room, EventMessage, MessageType, WebSocketResponse } from "../types";
+import { useEffect, useState } from "react";
+import { Room, EventMessage, MessageType, WebSocketResponse, PrivatePlayerInfo, Game } from "../types";
 import { renderGameState } from "./GameState";
 
 export function Home({ username }: { username: string }) {
@@ -11,6 +11,10 @@ export function Home({ username }: { username: string }) {
       queryParams: { username },
     });
 
+  let [roomInfo, setRoomInfo] = useState<Room>()
+  let [gameInfo, setGameInfo] = useState<Game>()
+  let [privatePlayerInfo, setPrivatePlayerInfo] = useState<PrivatePlayerInfo>()
+
   useEffect(() => {
     sendJsonMessage({
       uuid: "null",
@@ -18,9 +22,18 @@ export function Home({ username }: { username: string }) {
     } as EventMessage);
   }, [sendJsonMessage]);
 
-  if (ws_response) {
-    let { room, private_player_state } = ws_response;
-    return <>{renderGameState(room, username, sendJsonMessage)}</>;
+  useEffect(() => {
+    if(ws_response){
+      setRoomInfo(ws_response.room)
+      setGameInfo(ws_response.game)
+      setPrivatePlayerInfo(ws_response.private_player_state)
+    }
+  }, [ws_response]);
+
+
+
+  if (roomInfo && gameInfo) {
+    return <>{renderGameState(roomInfo, gameInfo, username, sendJsonMessage, privatePlayerInfo)}</>;
   }
-  return <></>;
+  return <>Loading</>;
 }

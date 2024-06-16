@@ -47,6 +47,7 @@ export type PublicPlayerInfo = {
   chips: number;
   current_bid: number;
   folded: boolean;
+  hand_ranking?: number
 };
 
 export type PrivatePlayerInfo = {
@@ -63,12 +64,13 @@ export type Game = {
 
 export type PublicGameState = {
   seats: (PublicPlayerInfo | null)[];
-  playersTurnCount?: number;
-  tableCards?: Card[];
+  seatNumbersTurn: number;
+  tableCards: Card[];
   state: GameState;
   pot: number;
+  blind: number;
   current_highest_bid: number;
-  hand_rankings?: { [id: string]: number };
+  timeLeft: number
 };
 
 export enum GameState {
@@ -83,8 +85,7 @@ export enum GameState {
 export type Room = {
   id: string;
   name: string;
-  users?: User[];
-  public_game_state: PublicGameState;
+  users: User[];
 };
 
 export enum MessageType {
@@ -111,5 +112,6 @@ export type EventMessage = {
 
 export type WebSocketResponse = {
   room: Room;
+  game: Game;
   private_player_state: PrivatePlayerInfo;
 };

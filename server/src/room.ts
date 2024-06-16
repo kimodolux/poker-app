@@ -1,15 +1,18 @@
 import { v4 as uuidv4 } from "uuid";
 import WebSocket from "ws";
-import { game, removePlayerFromGame } from "./game";
+import { removePlayerFromGame } from "./game";
 import { Room, User } from "./types";
 import { addConnection } from "./websocket";
 
-export let room: Room = {
+let room: Room = {
   id: "1",
   name: "Room 1",
   users: [],
-  public_game_state: game.public_game_state,
 };
+
+export const getRoom = () => {
+  return room
+}
 
 export const addPlayerToRoom = (connection: WebSocket, username?: string) => {
   let uuid = "";

@@ -1,22 +1,21 @@
-import { EventMessage, MessageType, Room } from "../types";
+import { EventMessage, Game, MessageType, PrivatePlayerInfo, Room } from "../types";
 
 export const renderGameState = (
   room_info: Room,
+  game_info: Game,
   username: string,
   sendJsonMessage: (em: EventMessage) => void,
+  private_info?: PrivatePlayerInfo,
 ) => {
-  console.log(room_info);
-  const current_users_seat_index = room_info.public_game_state.seats.findIndex(
+  const current_users_seat_index = game_info.public_game_state.seats.findIndex(
     (u) => u?.username === username,
   );
 
-  let player_count = room_info.public_game_state.seats.filter((p) => p).length;
-  console.log(current_users_seat_index);
-  if (!room_info.public_game_state || !room_info.users) {
+  let player_count = game_info.public_game_state.seats.filter((p) => p).length;
+  if (!game_info.public_game_state || !room_info.users) {
     return <></>;
   }
-  let uuid = room_info.users.find((u) => u.username === username)?.id;
-
+  let uuid = room_info.users.find((u) => u.username === username)!.id;
   return (
     <>
       <h1>Room name: {room_info.name}</h1>
@@ -26,7 +25,7 @@ export const renderGameState = (
         return <p key={user.id}> {user.username} </p>;
       })}
       <h2>Players in game</h2>
-      {room_info.public_game_state.seats.map((player, index) => {
+      {game_info.public_game_state.seats.map((player, index) => {
         if (!player) {
           return (
             <>
@@ -68,13 +67,13 @@ export const renderGameState = (
         );
       })}
       <button
-        onClick={() => sendJsonMessage({ messageType: MessageType.START_GAME })}
+        onClick={() => sendJsonMessage({ uuid, messageType: MessageType.START_GAME })}
         disabled={player_count < 2}
       >
         Start Game
       </button>
       <h2>Table cards</h2>
-      {room_info.public_game_state.tableCards?.map((card) => {
+      {game_info.public_game_state.tableCards?.map((card) => {
         return (
           <p key={card.suit + card.value}>
             {" "}
@@ -82,9 +81,26 @@ export const renderGameState = (
           </p>
         );
       })}
+      <h2>My cards</h2>
+      {private_info?.hand?.map((card) => {
+        return (
+          <p key={card.suit + card.value}>
+            {" "}
+            {card.suit} {card.value}{" "}
+          </p>
+        );
+      })}
+      <h2>Hand rankings</h2>
+      {game_info.public_game_state.seats.map((card, i) => {
+          return  (
+            <p>Seat {i+1}: {card?.hand_ranking}</p>
+          )
+        })
+      }
       <h2>Public game state</h2>
-      <p>Game state: {room_info.public_game_state.state}</p>
-      <p>Players turn: {room_info.public_game_state.playersTurnCount}</p>
+      <p>Game state: {game_info.public_game_state.state}</p>
+      <p>Seat's turn: {game_info.public_game_state.seatNumbersTurn + 1}</p>
+      <p>Time left: {game_info.public_game_state.timeLeft} seconds</p>
     </>
   );
 };
